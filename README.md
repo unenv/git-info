@@ -34,11 +34,18 @@ generator.generate_git_json("output-directory")
 
 ### Configuration
 
-You can set a default output path in your `pyproject.toml`:
+You can configure default output paths in your `pyproject.toml`:
 
+**Single path:**
 ```toml
 [tool.git-json]
 path = "my-custom-path"
+```
+
+**Multiple paths** (generates git.json in each location):
+```toml
+[tool.git-json]
+path = ["src/resources", "dist/info", "build/metadata"]
 ```
 
 This is useful when using git-json as a poetry script:
@@ -48,7 +55,7 @@ This is useful when using git-json as a poetry script:
 git-json = "git_json.cli:main"
 
 [tool.git-json]
-path = "src/resources"
+path = ["src/resources", "dist/info"]
 ```
 
 ## Output

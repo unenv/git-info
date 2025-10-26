@@ -9,28 +9,34 @@ try:
 except ImportError:
     import tomli as tomllib
 
-def _get_default_path():
-    """Get default path from pyproject.toml or fallback."""
+def _get_default_paths():
+    """Get default paths from pyproject.toml or fallback."""
     try:
         pyproject_path = Path("pyproject.toml")
         if pyproject_path.exists():
             with open(pyproject_path, "rb") as f:
                 data = tomllib.load(f)
-                return data.get("tool", {}).get("git-json", {}).get("path", "resources")
+                path_config = data.get("tool", {}).get("git-json", {}).get("path", "resources")
+                return path_config if isinstance(path_config, list) else [path_config]
     except Exception:
         pass
-    return "resources"
+    return ["resources"]
 
 def main():
     """Generate git info."""
     parser = argparse.ArgumentParser(description="Generate git info")
-    default_path = _get_default_path()
-    parser.add_argument("--package-path", default=default_path, 
-                       help=f"Package path for git info output (default: {default_path})")
+    default_paths = _get_default_paths()
+    parser.add_argument("--package-path", 
+                       help="Package path for git info output")
     args = parser.parse_args()
     
     generator = GitJsonGenerator()
-    generator.generate_git_json(args.package_path)
+    
+    if args.package_path:
+        generator.generate_git_json(args.package_path)
+    else:
+        for path in default_paths:
+            generator.generate_git_json(path)
 
 if __name__ == "__main__":
     main()

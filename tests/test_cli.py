@@ -39,9 +39,9 @@ def test_cli_custom_path():
             mock_path.return_value = Path(temp_dir)
             main()
 
-def test_get_default_path_from_pyproject():
-    """Test reading path from pyproject.toml."""
-    from git_json.cli import _get_default_path
+def test_get_single_path_from_pyproject():
+    """Test reading single string path from pyproject.toml."""
+    from git_json.cli import _get_default_paths
     import tempfile
     import os
     
@@ -51,7 +51,6 @@ def test_get_default_path_from_pyproject():
         f.write(pyproject_content)
         f.flush()
         
-        # Change to the temp file's directory
         original_cwd = os.getcwd()
         temp_dir = os.path.dirname(f.name)
         pyproject_path = os.path.join(temp_dir, 'pyproject.toml')
@@ -59,8 +58,8 @@ def test_get_default_path_from_pyproject():
         
         try:
             os.chdir(temp_dir)
-            result = _get_default_path()
-            assert result == "custom/path"
+            result = _get_default_paths()
+            assert result == ["custom/path"]
         finally:
             os.chdir(original_cwd)
             os.unlink(pyproject_path)
@@ -68,9 +67,35 @@ def test_get_default_path_from_pyproject():
 
 def test_get_default_path_fallback():
     """Test fallback when no pyproject.toml exists."""
-    from git_json.cli import _get_default_path
+    from git_json.cli import _get_default_paths
     
     with patch('git_json.cli.Path') as mock_path:
         mock_path.return_value.exists.return_value = False
-        result = _get_default_path()
-        assert result == "resources"
+        result = _get_default_paths()
+        assert result == ["resources"]
+
+
+def test_get_multiple_paths_from_pyproject():
+    """Test reading multiple paths from pyproject.toml."""
+    from git_json.cli import _get_default_paths
+    import tempfile
+    import os
+    
+    pyproject_content = b'[tool.git-json]\npath = ["path1", "path2", "path3"]\n'
+    
+    with tempfile.NamedTemporaryFile(mode='wb', delete=False, suffix='.toml') as f:
+        f.write(pyproject_content)
+        f.flush()
+        
+        original_cwd = os.getcwd()
+        temp_dir = os.path.dirname(f.name)
+        pyproject_path = os.path.join(temp_dir, 'pyproject.toml')
+        os.rename(f.name, pyproject_path)
+        
+        try:
+            os.chdir(temp_dir)
+            result = _get_default_paths()
+            assert result == ["path1", "path2", "path3"]
+        finally:
+            os.chdir(original_cwd)
+            os.unlink(pyproject_path)
