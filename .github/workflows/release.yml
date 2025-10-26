@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  release:
+    types: [ created ]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    
+    - name: Install Poetry
+      uses: snok/install-poetry@v1.4.1
+    
+    - name: Install dependencies
+      run: poetry install --with dev
+    
+    - name: Build package
+      run: poetry build
+
+    - name: Find wheel file
+      id: wheel
+      run: echo "wheel_path=$(ls dist/*.whl)" >> $GITHUB_OUTPUT
+
+    - name: Upload package to release
+      run: gh release upload ${{ github.event.release.tag_name }} ${{ steps.wheel.outputs.wheel_path }}
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish to PyPI
+      env:
+        POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
+      run: poetry publish
