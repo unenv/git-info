@@ -1,6 +1,7 @@
 # git-json
 [![codecov](https://codecov.io/github/unenv/git-json/graph/badge.svg?token=0QQ7JROLWL)](https://codecov.io/github/unenv/git-json)
-![PyPI - Version](https://img.shields.io/pypi/v/git-json)
+[![PyPI version](https://img.shields.io/pypi/v/git-json)](https://pypi.org/project/git-json/)
+![Python versions](https://img.shields.io/pypi/pyversions/git-json)
 
 A Python tool to generate comprehensive git information for your projects.
 
